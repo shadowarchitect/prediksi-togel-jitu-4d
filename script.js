@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* =====================
-     BUTTON FLOW
+     BUTTON FLOW - UPDATED
   ====================== */
   qs('#btnMulai').onclick = () => showPage('page-input');
   qs('#btnBack').onclick  = () => showPage('page-country');
@@ -56,10 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     userData.feeling = v;
-    showPage('page-question');
+    // Tampilkan page pilihan history
+    showPage('page-history-choice');
   };
 
-  qs('#btnFeeling').onclick  = () => showPage('page-history');
+  // Tombol History Choice
+  qs('#btnWithHistory').onclick = () => showPage('page-history');
+  qs('#btnSkipHistory').onclick = () => {
+    userData.history = [];
+    generateBBFSAndResults();
+  };
+
+  qs('#btnFeeling').onclick  = () => showPage('page-history-choice');
   qs('#btnBocoran').onclick = () => showPage('page-education');
 
   qs('#btnEduNext').onclick = () => {
@@ -67,18 +75,21 @@ document.addEventListener('DOMContentLoaded', () => {
     showPage('page-input');
   };
 
+  // LOGIC HISTORY - OPTIONAL (tidak wajib)
   qs('#btnHistoryNext').onclick = () => {
     const history = [...qsa('.history')].map(i => i.value.trim());
 
     // Filter hanya yang diisi
     const filledHistory = history.filter(h => h.length > 0);
     
+    // Tidak ada history? Valid (skip history)
     if (filledHistory.length === 0) {
-      alert('Harap isi minimal 1 history');
+      userData.history = [];
+      generateBBFSAndResults();
       return;
     }
 
-    // Validasi format
+    // Validasi format untuk yang diisi
     if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
       alert('History harus 4 digit');
       return;
@@ -97,141 +108,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     userData.history = filledHistory;
-    
-    // Gunakan logika analisis history yang lebih cerdas
-    userData.bbfs = generateBBFSBasedOnHistory(userData.feeling, userData.history);
-    userData.results = generateResults(userData.bbfs);
-
-    runProcessing();
+    generateBBFSAndResults();
   };
 
   /* =====================
-     ANALISIS HISTORY - LOGIKA BARU
+     GENERATE BBFS 7D (FEELING + 3 RANDOM, MAX 2 DUPS)
   ====================== */
-  function analyzeHistoryPattern(history) {
-    let hasDups = false;
-    let dupsNumbers = '';
-    let dupsCount = 0;
+  function generateBBFS7D(feeling) {
+    let digits = feeling.split('');
     
-    for (let i = 0; i < history.length; i++) {
-      const num = history[i];
-      const digits = num.split('');
-      const uniqueDigits = [...new Set(digits)];
+    // Tambah 3 digit random
+    for(let i = 0; i < 3; i++) {
+      digits.push(randDigit());
+    }
+    
+    // Validasi: tidak ada digit muncul 3x
+    let valid = false;
+    while(!valid) {
+      const digitCount = {};
+      digits.forEach(d => {
+        digitCount[d] = (digitCount[d] || 0) + 1;
+      });
       
-      // Cek apakah ada duplikat dalam satu nomor
-      if (uniqueDigits.length < 4) {
-        hasDups = true;
-        dupsCount++;
-        
-        // Ambil digit yang terduplikat
-        const digitCount = {};
-        digits.forEach(d => {
-          digitCount[d] = (digitCount[d] || 0) + 1;
-        });
-        
-        // Tambahkan digit duplikat ke dupsNumbers
-        for (const digit in digitCount) {
-          if (digitCount[digit] > 1 && !dupsNumbers.includes(digit)) {
-            dupsNumbers += digit;
-          }
-        }
+      // Cek apakah ada digit muncul 3x atau lebih
+      const hasTriple = Object.values(digitCount).some(count => count >= 3);
+      
+      if(hasTriple) {
+        // Ganti random digit terakhir
+        digits[digits.length - 1] = randDigit();
+      } else {
+        valid = true;
       }
     }
     
-    const allDupsInRow = dupsCount === history.length;
-    
-    return {
-      hasDups,
-      dupsNumbers,
-      allDupsInRow,
-      dupsCount
-    };
+    // Shuffle final
+    return shuffle(digits).join('');
   }
 
   /* =====================
-     BBFS GENERATOR - LOGIKA BARU
+     GENERATE BBFS 6D DAN 5D DARI 7D
   ====================== */
-  function generateBBFSBasedOnHistory(feeling, history) {
-    // Jika tidak ada history, gunakan logika lama
-    if (history.length === 0) {
-      const pool = [...new Set(feeling.split(''))];
-      while (pool.length < 7) pool.push(randDigit());
-      return shuffle(pool).slice(0,7).join('');
-    }
+  function generateBBFSLadder(bbfs7d) {
+    const digits = bbfs7d.split('');
     
-    const analysis = analyzeHistoryPattern(history);
+    // BBFS 6D - 2 results
+    const bbfs6d = [
+      digits.slice(0, 6).join(''),
+      digits.slice(1, 7).join('')
+    ];
     
-    // CASE 1: Semua history ada dups
-    if (analysis.allDupsInRow) {
-      // Kasus khusus: semua dups, beri 7 digit unik
-      const uniqueDigits = '0123456789'.split('');
-      return shuffle(uniqueDigits).slice(0,7).join('');
-    }
+    // BBFS 5D - 4 results
+    const bbfs5d = [
+      digits.slice(0, 5).join(''),
+      digits.slice(1, 6).join(''),
+      digits.slice(2, 7).join(''),
+      (digits[0] + digits[2] + digits[3] + digits[5] + digits[6]).join('')
+    ];
     
-    // CASE 2: Ada dups (tidak semua)
-    if (analysis.hasDups) {
-      // Gabungkan feeling dengan digit duplikat
-      const feelingDigits = feeling.split('');
-      const dupsDigits = analysis.dupsNumbers.split('');
-      
-      let pool = [...new Set([...feelingDigits, ...dupsDigits])];
-      
-      // Tambah random hingga 7
-      while (pool.length < 7) {
-        const randomDigit = randDigit();
-        if (!pool.includes(randomDigit)) {
-          pool.push(randomDigit);
-        }
-      }
-      
-      return shuffle(pool).slice(0,7).join('');
-    }
-    
-    // CASE 3: Tidak ada dups sama sekali
-    // Berarti kemungkinan besar akan keluar dups
-    const feelingDigits = feeling.split('');
-    
-    // Ambil 2 digit dari feeling untuk diduplikasi
-    const selectedDigits = shuffle(feelingDigits).slice(0, 2);
-    
-    // Gabungkan: feeling + selectedDigits + random
-    let pool = [...feelingDigits, ...selectedDigits];
-    
-    // Tambah 1 random digit
-    let randomDigit;
-    do {
-      randomDigit = randDigit();
-    } while (pool.includes(randomDigit));
-    
-    pool.push(randomDigit);
-    
-    // Shuffle dan ambil 7, pastikan ada duplikat
-    let result = shuffle(pool).slice(0, 7);
-    
-    // Jika semua unik, buat duplikat
-    if (new Set(result).size === 7) {
-      result[6] = result[0];
-    }
-    
-    return result.join('');
+    return { bbfs6d, bbfs5d };
   }
 
   /* =====================
-     RESULT ENGINE
+     GENERATE RESULTS (4D/3D/2D/COLOK) - UPDATED 8 RESULTS
   ====================== */
   function generateResults(bbfs) {
     const d = bbfs.split('');
 
-    /* ---- 4D SET (5) ---- */
+    /* ---- 4D SET (8 RESULTS) ---- */
     const set4d = [];
-    while (set4d.length < 5) {
+    while (set4d.length < 8) {
       const n = shuffle(d).slice(0,4).join('');
       if (!set4d.includes(n)) set4d.push(n);
     }
 
-    /* ---- 3D JAGA (5) ---- */
+    /* ---- 3D JAGA (8 RESULTS) ---- */
     const set3d = [];
-    while (set3d.length < 5) {
+    while (set3d.length < 8) {
       const n = shuffle(d).slice(0,3).join('');
       if (!set3d.includes(n)) set3d.push(n);
     }
@@ -286,53 +238,122 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================
-     FAKE PROCESS
+     MAIN GENERATION FUNCTION
   ====================== */
-  function runProcessing() {
-    showPage('page-processing');
-    const fill = qs('.progress-fill');
-    const text = qs('.progress-text');
-
-    let p = 0;
-    const steps = [
-      'Membaca data...',
-      'Mendeteksi pola...',
-      'Menyusun BBFS...',
-      'Finalisasi...'
-    ];
-    let i = 0;
-
-    const t = setInterval(() => {
-      p += 25;
-      if (p > 100) p = 100;
-      fill.style.width = p + '%';
-      if (i < steps.length) text.textContent = steps[i++];
-
-      if (p === 100) {
-        clearInterval(t);
-        renderResult();
-        showPage('page-result');
-      }
-    }, 400);
+  function generateBBFSAndResults() {
+    // Generate BBFS 7D
+    userData.bbfs = generateBBFS7D(userData.feeling);
+    
+    // Generate BBFS Ladder (6D, 5D)
+    userData.ladder = generateBBFSLadder(userData.bbfs);
+    
+    // Generate Results (4D/3D/2D/Colok)
+    userData.results = generateResults(userData.bbfs);
+    
+    // Run Processing Animation
+    runProcessing();
   }
 
   /* =====================
-     RENDER
+     FAKE PROCESSING - REALISTIC VERSION
+  ====================== */
+  function runProcessing() {
+    showPage('page-processing');
+    
+    const fill = qs('.progress-fill');
+    const text = qs('.progress-text');
+    const logContainer = qs('.process-log') || (() => {
+      const div = document.createElement('div');
+      div.className = 'process-log';
+      div.style.cssText = 'margin-top:20px;font-size:14px;color:#666;text-align:left;max-width:400px;margin:20px auto;font-family:monospace;';
+      qs('.progress-container').parentNode.appendChild(div);
+      return div;
+    })();
+    
+    logContainer.innerHTML = '';
+    
+    const steps = [
+      {percent: 25, text: "Feeling nomor user diterima", 
+       log: `✓ FEELING DITERIMA: ${userData.feeling.split('').join(' ')}`},
+      
+      {percent: 50, text: "Menganalisa data number dari sistem", 
+       log: `⏳ MENGAKSES DATABASE: 5,247 hasil sebelumnya<br>✓ DATA TERLOAD 100%`},
+      
+      {percent: 75, text: "Menganalisa pola bandar dari hasil sebelumnya", 
+       log: `⏳ MENDETEKSI POLA BANDAR: 7 hari terakhir<br>${userData.history.length > 0 ? '✓ POLA HISTORY TERANALISA' : '✓ TANPA HISTORY, GUNAKAN DATA SISTEM'}`},
+      
+      {percent: 90, text: "Menghitung probabilitas untuk hari ini", 
+       log: `⏳ MENGHITUNG PROBABILITAS...<br>✓ BBFS GENERATED: ${userData.bbfs.split('').join(' ')}`},
+      
+      {percent: 100, text: "Nomor prediksi sudah selesai !", 
+       log: `✅ NOMOR PREDIKSI SUDAH SELESAI!`}
+    ];
+    
+    let currentStep = 0;
+    
+    const interval = setInterval(() => {
+      if (currentStep < steps.length) {
+        const step = steps[currentStep];
+        fill.style.width = step.percent + '%';
+        text.textContent = step.text;
+        
+        // Add log with typewriter effect
+        const logLine = document.createElement('div');
+        logLine.innerHTML = step.log;
+        logContainer.appendChild(logLine);
+        
+        // Scroll log to bottom
+        logContainer.scrollTop = logContainer.scrollHeight;
+        
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        
+        // Short delay before showing results
+        setTimeout(() => {
+          renderResult();
+          showPage('page-result');
+        }, 500);
+      }
+    }, 1500); // 1.5 detik per step
+  }
+
+  /* =====================
+     RENDER RESULT PAGE
   ====================== */
   function renderResult() {
+    // Render BBFS 7D
     const bbfsBox = qs('#bbfsBox');
-    bbfsBox.innerHTML = '';
-    userData.bbfs.split('').forEach(d => {
-      const s = document.createElement('span');
-      s.textContent = d;
-      bbfsBox.appendChild(s);
-    });
-
+    if (bbfsBox) {
+      bbfsBox.innerHTML = '';
+      userData.bbfs.split('').forEach(d => {
+        const s = document.createElement('span');
+        s.textContent = d;
+        bbfsBox.appendChild(s);
+      });
+    }
+    
+    // Setup result sections
     qs('#resMain').classList.add('hidden');
     qs('#resColok').classList.add('hidden');
-
+    qs('#resBBFS').classList.add('hidden');
+    
+    // Button untuk BBFS Ladder (NEW)
+    qs('#btnBbfsSet').onclick = () => {
+      qs('#resMain').classList.add('hidden');
+      qs('#resColok').classList.add('hidden');
+      const el = qs('#resBBFS');
+      el.classList.remove('hidden');
+      el.innerHTML = 
+        'BBFS 7 DIGIT<br>' + userData.bbfs + '<br><br>' +
+        'BBFS 6 DIGIT<br>' + userData.ladder.bbfs6d.join(' ') + '<br><br>' +
+        'BBFS 5 DIGIT<br>' + userData.ladder.bbfs5d.join(' ');
+    };
+    
+    // Button untuk Main Set (EXISTING)
     qs('#btnMainSet').onclick = () => {
       qs('#resColok').classList.add('hidden');
+      qs('#resBBFS').classList.add('hidden');
       const el = qs('#resMain');
       el.classList.remove('hidden');
       el.innerHTML =
@@ -340,9 +361,11 @@ document.addEventListener('DOMContentLoaded', () => {
         '3D ANGKA JAGA<br>' + userData.results.set3d.join(' ') + '<br><br>' +
         '2D ANGKA JAGA<br>' + userData.results.set2d.join(' ');
     };
-
+    
+    // Button untuk Colok Set (EXISTING)
     qs('#btnColokSet').onclick = () => {
       qs('#resMain').classList.add('hidden');
+      qs('#resBBFS').classList.add('hidden');
       const el = qs('#resColok');
       el.classList.remove('hidden');
       el.innerHTML =
@@ -351,5 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'COLOK 3D<br>' + userData.results.cb3d.join(' ');
     };
   }
+
+  // Initialize
+  showPage('page-intro');
 
 });
