@@ -1423,58 +1423,82 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================
-     PROCESSING ANIMATION - REALISTIC
+     PROCESSING ANIMATION - REALISTIC (FIXED)
   ====================== */
   function runProcessing() {
+    console.log('RUN PROCESSING CALLED');
     showPage('page-processing');
     
-    const fill = qs('#progressFill');
-    const text = qs('#progressText');
-    const log = qs('#processLog');
-    log.innerHTML = '';
-    
-    const steps = [
-      {percent: 20, text: "Feeling nomor user diterima", 
-       log: `✓ FEELING DITERIMA: ${userData.feeling.split('').join(' ')}`},
+    // WAIT for DOM to update after showing page
+    setTimeout(() => {
+      const fill = qs('#progressFill');
+      const text = qs('#progressText');
+      const log = qs('#processLog');
       
-      {percent: 40, text: "Menganalisa data number dari sistem", 
-       log: `⏳ MENGAKSES DATABASE: 5,247 hasil sebelumnya<br>✓ DATA TERLOAD 100%`},
+      console.log('Elements after timeout:', { 
+        fill: fill ? 'FOUND' : 'NOT FOUND',
+        text: text ? 'FOUND' : 'NOT FOUND',
+        log: log ? 'FOUND' : 'NOT FOUND'
+      });
       
-      {percent: 60, text: "Menganalisa pola bandar dari hasil sebelumnya", 
-       log: userData.history.length > 0 
-         ? `⏳ MENDETEKSI POLA: ${userData.history.length} history terdeteksi`
-         : `⏳ MENDETEKSI POLA: menggunakan data sistem`},
-      
-      {percent: 80, text: "Menghitung probabilitas untuk hari ini", 
-       log: `⏳ MENGHITUNG PROBABILITAS...<br>✓ BBFS GENERATED: ${userData.bbfs.split('').join(' ')}`},
-      
-      {percent: 100, text: "Nomor prediksi sudah selesai !", 
-       log: `✅ NOMOR PREDIKSI SUDAH SELESAI!`}
-    ];
-    
-    let currentStep = 0;
-    
-    const interval = setInterval(() => {
-      if (currentStep < steps.length) {
-        const step = steps[currentStep];
-        fill.style.width = step.percent + '%';
-        text.textContent = step.text;
-        
-        // Add log
-        const logLine = document.createElement('div');
-        logLine.innerHTML = step.log;
-        log.appendChild(logLine);
-        log.scrollTop = log.scrollHeight;
-        
-        currentStep++;
-      } else {
-        clearInterval(interval);
+      // SAFETY CHECK: If elements not found, skip to result
+      if (!fill || !text || !log) {
+        console.error('Progress elements missing! Skipping to result.');
         setTimeout(() => {
           renderResult();
           showPage('page-result');
         }, 500);
+        return;
       }
-    }, 1200);
+      
+      log.innerHTML = '';
+      
+      const steps = [
+        {percent: 20, text: "Feeling nomor user diterima", 
+         log: `✓ FEELING DITERIMA: ${userData.feeling.split('').join(' ')}`},
+        
+        {percent: 40, text: "Menganalisa data number dari sistem", 
+         log: `⏳ MENGAKSES DATABASE: 5,247 hasil sebelumnya<br>✓ DATA TERLOAD 100%`},
+        
+        {percent: 60, text: "Menganalisa pola bandar dari hasil sebelumnya", 
+         log: userData.history.length > 0 
+           ? `⏳ MENDETEKSI POLA: ${userData.history.length} history terdeteksi`
+           : `⏳ MENDETEKSI POLA: menggunakan data sistem`},
+        
+        {percent: 80, text: "Menghitung probabilitas untuk hari ini", 
+         log: `⏳ MENGHITUNG PROBABILITAS...<br>✓ BBFS GENERATED: ${userData.bbfs.split('').join(' ')}`},
+        
+        {percent: 100, text: "Nomor prediksi sudah selesai !", 
+         log: `✅ NOMOR PREDIKSI SUDAH SELESAI!`}
+      ];
+      
+      let currentStep = 0;
+      
+      const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+          const step = steps[currentStep];
+          
+          // FIXED: Now fill should exist
+          fill.style.width = step.percent + '%';
+          text.textContent = step.text;
+          
+          // Add log
+          const logLine = document.createElement('div');
+          logLine.innerHTML = step.log;
+          log.appendChild(logLine);
+          log.scrollTop = log.scrollHeight;
+          
+          currentStep++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            renderResult();
+            showPage('page-result');
+          }, 500);
+        }
+      }, 1200);
+      
+    }, 100); // 100ms delay untuk DOM update
   }
 
   /* =====================
@@ -1700,3 +1724,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
