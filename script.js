@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     results: {}
   };
 
-  /* =====================
-     BUTTON FLOW - SIMPLIFIED
+ /* =====================
+     BUTTON FLOW - MINIMAL FIX
   ====================== */
   // Intro -> Country
   qs('#btnStartIntro').onclick = () => {
@@ -64,7 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     showPage('page-input');
   };
 
-  // Input -> History Choice
+  // Back button
+  qs('#btnBack').onclick = () => {
+    console.log('Back clicked');
+    showPage('page-country');
+  };
+
+  // Input -> Questionnaire (CHANGED: was page-history-choice)
   qs('#btnNextFeeling').onclick = () => {
     const v = qs('#feelingInput').value.trim();
     console.log('Feeling input:', v);
@@ -76,22 +82,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     userData.feeling = v;
     console.log('User feeling set:', userData.feeling);
-    showPage('page-history-choice');
+    showPage('page-question'); // ← ONLY CHANGE HERE
   };
 
-  // Back button
-  qs('#btnBack').onclick = () => {
-    console.log('Back clicked');
-    showPage('page-country');
+  // Questionnaire -> History Input (jika pilih FEELING)
+  qs('#btnFeeling').onclick = () => {
+    console.log('Feeling clicked');
+    qs('#btnFeeling').classList.add('active');
+    qs('#btnBocoran').classList.remove('active');
+    setTimeout(() => showPage('page-history'), 300);
   };
 
-  // History Choice -> History Input
-  qs('#btnWithHistory').onclick = () => {
-    console.log('With history clicked');
-    showPage('page-history');
+  // Questionnaire -> Education (jika pilih BOCORAN) 
+  qs('#btnBocoran').onclick = () => {
+    console.log('Bocoran clicked');
+    qs('#btnBocoran').classList.add('active');
+    qs('#btnFeeling').classList.remove('active');
+    setTimeout(() => showPage('page-education'), 300);
   };
 
-  // Skip History -> Generate langsung
+  // Education -> Back to Input Feeling
+  qs('#btnEduNext').onclick = () => {
+    console.log('Education next');
+    qs('#feelingInput').value = '';
+    showPage('page-input');
+  };
+
+  // SKIP HISTORY (tetap sama)
   qs('#btnSkipHistory').onclick = () => {
     console.log('Skip history clicked');
     userData.history = [];
@@ -99,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBBFSAndResults();
   };
 
-  // History Input -> Generate
+  // History Input -> Generate (tetap sama)
   qs('#btnHistoryNext').onclick = () => {
     console.log('History next clicked');
     const history = [...qsa('.history')].map(i => i.value.trim());
@@ -130,11 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBBFSAndResults();
   };
 
-  // Other buttons (tetap ada tapi mungkin tidak dipakai)
+  // Other buttons (tetap sama)
   qs('#btnHome').onclick = () => showPage('page-intro');
   qs('#btnDonate').onclick = () => showPage('page-donation');
   qs('#btnBackHome').onclick = () => showPage('page-intro');
-
   /* =====================
      BBFS GENERATION - FIXED
   ====================== */
@@ -475,4 +491,5 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing...');
   showPage('page-intro');
 });
+
 
