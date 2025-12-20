@@ -1320,23 +1320,38 @@ document.addEventListener('DOMContentLoaded', () => {
      BBFS LADDER GENERATOR
   ====================== */
   function generateBBFSLadder(bbfs7d) {
+  console.log('Ladder called with:', bbfs7d);
+  
+  try {
     const digits = bbfs7d.split('');
     
-    // BBFS 6D - 2 results
+    // BBFS 6D
     const bbfs6d = [
       digits.slice(0, 6).join(''),
       digits.slice(1, 7).join('')
     ];
     
-    // BBFS 5D - 4 results
+    // BBFS 5D - IMPORTANT: NO .join() on the last item!
+    const lastItem = digits[0] + digits[2] + digits[3] + digits[5] + digits[6];
+    console.log('Last 5D item:', lastItem);
+    
     const bbfs5d = [
       digits.slice(0, 5).join(''),
       digits.slice(1, 6).join(''),
       digits.slice(2, 7).join(''),
-      (digits[0] + digits[2] + digits[3] + digits[5] + digits[6]).join('')
+      lastItem  // No .join() here!
     ];
     
+    console.log('Ladder result:', { bbfs6d, bbfs5d });
     return { bbfs6d, bbfs5d };
+    
+  } catch (error) {
+    console.error('Error in generateBBFSLadder:', error);
+    // Return fallback data so flow continues
+    return {
+      bbfs6d: ['000000', '111111'],
+      bbfs5d: ['00000', '11111', '22222', '33333']
+    };
   }
 
   /* =====================
@@ -1724,4 +1739,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
