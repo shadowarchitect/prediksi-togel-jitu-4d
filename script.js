@@ -153,84 +153,95 @@ document.addEventListener('DOMContentLoaded', () => {
   qs('#btnBackHome').onclick = () => showPage('page-intro');
 
   /* =====================
-     BBFS GENERATION - FIXED (SHUFFLED LADDER)
+     BBFS LADDER GENERATOR - FINAL (UNIQUE COMBOS)
   ====================== */
-  function generateBBFS7D(feeling) {
-    console.log('Generating BBFS from feeling:', feeling);
-    
-    let digits = feeling.split('');
-    console.log('Initial digits:', digits);
-    
-    // Add 3 random digits
-    for(let i = 0; i < 3; i++) {
-      digits.push(randDigit());
+function generateBBFSLadder(bbfs7d) {
+  console.log('Generating shuffled ladder from:', bbfs7d);
+  const digits = bbfs7d.split('');
+  
+  // Helper: check if two combinations are the same (ignoring order)
+  const hasSameCombination = (arr, newCombo) => {
+    const sortedNew = [...newCombo].sort().join('');
+    for (const existing of arr) {
+      // Remove spaces if any, then sort and compare
+      const cleanExisting = existing.replace(/ /g, '');
+      const sortedExisting = cleanExisting.split('').sort().join('');
+      if (sortedNew === sortedExisting) return true;
     }
-    console.log('After adding random:', digits);
+    return false;
+  };
+  
+  // BBFS 6D - UNIQUE COMBINATIONS (2 results)
+  const bbfs6d = [];
+  const maxAttempts6d = 20;
+  let attempts6d = 0;
+  
+  while (bbfs6d.length < 2 && attempts6d < maxAttempts6d) {
+    const shuffled = shuffle([...digits]);
+    const combo = shuffled.slice(0, 6);
+    const numStr = combo.join(' ');
     
-    // Validate: no digit appears 3x
-    let valid = false;
-    let attempts = 0;
-    
-    while(!valid && attempts < 20) {
-      const digitCount = {};
-      digits.forEach(d => {
-        digitCount[d] = (digitCount[d] || 0) + 1;
-      });
-      
-      console.log('Digit count:', digitCount);
-      
-      const hasTriple = Object.values(digitCount).some(count => count >= 3);
-      
-      if(hasTriple) {
-        console.log('Has triple, regenerating...');
-        digits[4 + (attempts % 3)] = randDigit();
-        attempts++;
-      } else {
-        valid = true;
-      }
+    if (!hasSameCombination(bbfs6d, combo)) {
+      bbfs6d.push(numStr);
     }
-    
-    const result = shuffle(digits).join('');
-    console.log('Final BBFS 7D:', result);
-    return result;
+    attempts6d++;
   }
-
-  function generateBBFSLadder(bbfs7d) {
-    console.log('Generating shuffled ladder from:', bbfs7d);
-    const digits = bbfs7d.split('');
-    
-    // BBFS 6D - shuffled (not sequential)
-    const bbfs6d = [];
-    while (bbfs6d.length < 3) { // Changed from 2 to 3 for more variations
-      const shuffled = shuffle([...digits]);
-      const num = shuffled.slice(0, 6).join(' ');
-      if (!bbfs6d.includes(num)) bbfs6d.push(num);
-    }
-    
-    // BBFS 5D - shuffled (not sequential)
-    const bbfs5d = [];
-    while (bbfs5d.length < 4) {
-      const shuffled = shuffle([...digits]);
-      const num = shuffled.slice(0, 5).join(' ');
-      if (!bbfs5d.includes(num)) bbfs5d.push(num);
-    }
-    
-    console.log('BBFS 6D (shuffled):', bbfs6d);
-    console.log('BBFS 5D (shuffled):', bbfs5d);
-    
-    // Return all results in one array for display
-    const allResults = [
-      digits.join(' '), // 7D original
-      ...bbfs6d,        // 6D shuffled
-      ...bbfs5d         // 5D shuffled
-    ];
-    
-    return allResults;
+  
+  // If we couldn't find 2 unique combos, just use what we have
+  if (bbfs6d.length < 2) {
+    const shuffled = shuffle([...digits]);
+    bbfs6d.push(shuffled.slice(0, 6).join(' '));
   }
-
-  function generateResults(bbfs) {
-    console.log('Generating results from BBFS:', bbfs);
-    const d = bbfs.split('');
+  
+  // BBFS 5D - UNIQUE COMBINATIONS (4 results)
+  const bbfs5d = [];
+  const maxAttempts5d = 30;
+  let attempts5d = 0;
+  
+  while (bbfs5d.length < 4 && attempts5d < maxAttempts5d) {
+    const shuffled = shuffle([...digits]);
+    const combo = shuffled.slice(0, 5);
+    const numStr = combo.join(' ');
+    
+    if (!hasSameCombination(bbfs5d, combo)) {
+      bbfs5d.push(numStr);
+    }
+    attempts5d++;
+  }
+  
+  // Fill up if needed
+  while (bbfs5d.length < 4) {
+    const shuffled = shuffle([...digits]);
+    bbfs5d.push(shuffled.slice(0, 5).join(' '));
+  }
+  
+  console.log('BBFS 6D (unique combos):', bbfs6d);
+  console.log('BBFS 5D (unique combos):', bbfs5d);
+  
+  // Return format sesuai kebutuhan:
+  // Untuk index.html: return allResults (dengan spasi)
+  // Untuk script.js: return { bbfs6d, bbfs5d } (tanpa spasi?)
+  
+  // TAPI karena kita perlu konsisten, kita buat dua pilihan:
+  
+  // OPTION A: Untuk index.html (display dengan spasi)
+  const allResults = [
+    digits.join(' '), // 7D original
+    ...bbfs6d,        // 6D shuffled
+    ...bbfs5d         // 5D shuffled
+  ];
+  
+  return allResults;
+  
+  // OPTION B: Untuk script.js (processing tanpa spasi)
+  // Komen di atas, uncomment di bawah:
+  /*
+  return {
+    bbfs6d: bbfs6d.map(s => s.replace(/ /g, '')),
+    bbfs5d: bbfs5d.map(s => s.replace(/ /g, ''))
+  };
+  */
+}
 
     // 4D SET - 8 results
     const set4d = [];
@@ -554,5 +565,6 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing...');
   showPage('page-intro');
 });
+
 
 
