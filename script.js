@@ -201,9 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // BBFS 6D - shuffled (not sequential)
     const bbfs6d = [];
-    while (bbfs6d.length < 2) {
+    while (bbfs6d.length < 3) { // Changed from 2 to 3 for more variations
       const shuffled = shuffle([...digits]);
-      const num = shuffled.slice(0, 6).join('');
+      const num = shuffled.slice(0, 6).join(' ');
       if (!bbfs6d.includes(num)) bbfs6d.push(num);
     }
     
@@ -211,14 +211,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const bbfs5d = [];
     while (bbfs5d.length < 4) {
       const shuffled = shuffle([...digits]);
-      const num = shuffled.slice(0, 5).join('');
+      const num = shuffled.slice(0, 5).join(' ');
       if (!bbfs5d.includes(num)) bbfs5d.push(num);
     }
     
     console.log('BBFS 6D (shuffled):', bbfs6d);
     console.log('BBFS 5D (shuffled):', bbfs5d);
     
-    return { bbfs6d, bbfs5d };
+    // Return all results in one array for display
+    const allResults = [
+      digits.join(' '), // 7D original
+      ...bbfs6d,        // 6D shuffled
+      ...bbfs5d         // 5D shuffled
+    ];
+    
+    return allResults;
   }
 
   function generateResults(bbfs) {
@@ -286,16 +293,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1. Generate BBFS 7D
       userData.bbfs = generateBBFS7D(userData.feeling);
       
-      // 2. Generate shuffled ladder
-      userData.ladder = generateBBFSLadder(userData.bbfs);
+      // 2. Generate shuffled ladder AND get display results
+      const ladderResults = generateBBFSLadder(userData.bbfs);
       
-      // 3. Generate results
+      // 3. Generate other results
       userData.results = generateResults(userData.bbfs);
       
+      // 4. ADD LADDER RESULTS to userData for display
+      userData.ladderResults = ladderResults;
+      
       console.log('Generation successful!');
+      console.log('Ladder results:', ladderResults);
       console.log('Final userData:', userData);
       
-      // 4. Run processing
+      // 5. Run processing
       runProcessing();
       
     } catch (error) {
@@ -543,4 +554,5 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing...');
   showPage('page-intro');
 });
+
 
