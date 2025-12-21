@@ -350,67 +350,67 @@ document.addEventListener('DOMContentLoaded', () => {
      RENDER RESULT - FOR NEW UI (BBFS VISIBLE FIRST)
   ====================== */
   function renderResult() {
-    console.log('Rendering result for new UI...');
+    console.log('Render Result - Clean UI');
     
-    // Update Hero Info
-    const country = localStorage.getItem('selectedCountry') || 'Singapore'; // sesuaikan
-    const today = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-    const formattedDate = today.toLocaleDateString('id-ID', options);
-    
-    qs('#resultTitle').textContent = `Hasil Prediksi Togel - ${country}`;
-    qs('#resultDate').textContent = formattedDate;
-
-    // Render BBFS 7D (1 2 3 4 5 6 7)
+    // 1. BBFS 7D - KOTAK TERPISAH (SUDAH BAGUS)
     const bbfs7dBox = qs('#bbfs7dBox');
     if (bbfs7dBox) {
-      bbfs7dBox.innerHTML = '';
-      userData.bbfs.split('').forEach(d => {
-        const span = document.createElement('span');
-        span.textContent = d;
-        span.style.display = 'inline-block';
-        span.style.margin = '0 4px';
-        span.style.fontSize = '24px';
-        span.style.fontWeight = 'bold';
-        span.style.color = '#7b3ff2';
-        bbfs7dBox.appendChild(span);
-      });
+        bbfs7dBox.innerHTML = '';
+        userData.bbfs.split('').forEach((d, index) => {
+            const span = document.createElement('span');
+            span.className = 'bbfs-digit';  // PAKAI CLASS CSS
+            span.textContent = d;
+            span.style.animationDelay = `${index * 0.1}s`;
+            bbfs7dBox.appendChild(span);
+        });
     }
 
-    // Render BBFS 6D (2 results, shuffled)
+    // 2. BBFS 6D - KOTAK TERPISAH JUGA
     const bbfs6dBox = qs('#bbfs6dBox');
     if (bbfs6dBox) {
-      bbfs6dBox.innerHTML = '';
-      userData.ladder.bbfs6d.forEach(num => {
-        const div = document.createElement('div');
-        div.textContent = num;
-        div.style.textAlign = 'center';
-        div.style.padding = '10px';
-        div.style.margin = '5px';
-        div.style.border = '1px solid #ddd';
-        div.style.borderRadius = '8px';
-        div.style.backgroundColor = '#f9f9f9';
-        div.style.fontWeight = 'bold';
-        bbfs6dBox.appendChild(div);
-      });
+        bbfs6dBox.innerHTML = '';
+        
+        // Untuk tiap 6-digit number
+        userData.ladder.bbfs6d.forEach((num, rowIndex) => {
+            // Buat baris baru
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'bbfs-row'; // CSS nanti kita buat
+            
+            // Split jadi per digit
+            const digits = num.split('');
+            digits.forEach((digit, digitIndex) => {
+                const span = document.createElement('span');
+                span.className = 'bbfs-digit-small'; // Class khusus 6D/5D
+                span.textContent = digit;
+                rowDiv.appendChild(span);
+            });
+            
+            bbfs6dBox.appendChild(rowDiv);
+        });
     }
 
-    // Render BBFS 5D (4 results, shuffled)
+    // 3. BBFS 5D - KOTAK TERPISAH JUGA
     const bbfs5dBox = qs('#bbfs5dBox');
     if (bbfs5dBox) {
-      bbfs5dBox.innerHTML = '';
-      userData.ladder.bbfs5d.forEach(num => {
-        const div = document.createElement('div');
-        div.textContent = num;
-        div.style.textAlign = 'center';
-        div.style.padding = '10px';
-        div.style.margin = '5px';
-        div.style.border = '1px solid #ddd';
-        div.style.borderRadius = '8px';
-        div.style.backgroundColor = '#f9f9f9';
-        div.style.fontWeight = 'bold';
-        bbfs5dBox.appendChild(div);
-      });
+        bbfs5dBox.innerHTML = '';
+        
+        // Untuk tiap 5-digit number
+        userData.ladder.bbfs5d.forEach((num, rowIndex) => {
+            // Buat baris baru
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'bbfs-row';
+            
+            // Split jadi per digit
+            const digits = num.split('');
+            digits.forEach((digit, digitIndex) => {
+                const span = document.createElement('span');
+                span.className = 'bbfs-digit-small';
+                span.textContent = digit;
+                rowDiv.appendChild(span);
+            });
+            
+            bbfs5dBox.appendChild(rowDiv);
+        });
     }
 
     // Setup tabs for 4D3D2D and Colok
@@ -543,3 +543,4 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing...');
   showPage('page-intro');
 });
+
