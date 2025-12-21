@@ -1250,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return shuffle(digits).join('');
   }
 
- /* =====================
+/* =====================
      BBFS LADDER GENERATOR
   ====================== */
   function generateBBFSLadder(bbfs7d) {
@@ -1259,22 +1259,21 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     const digits = bbfs7d.split('');
     
-    // BBFS 6D
-    const bbfs6d = [
-      digits.slice(0, 6).join(''),
-      digits.slice(1, 7).join('')
-    ];
+    // BBFS 6D - SHUFFLED (not linear)
+    const bbfs6d = [];
+    while (bbfs6d.length < 2) {
+      const shuffled = shuffle([...digits]);
+      const num = shuffled.slice(0, 6).join('');
+      if (!bbfs6d.includes(num)) bbfs6d.push(num);
+    }
     
-    // BBFS 5D - IMPORTANT: NO .join() on the last item!
-    const lastItem = digits[0] + digits[2] + digits[3] + digits[5] + digits[6];
-    console.log('Last 5D item:', lastItem);
-    
-    const bbfs5d = [
-      digits.slice(0, 5).join(''),
-      digits.slice(1, 6).join(''),
-      digits.slice(2, 7).join(''),
-      lastItem  // No .join() here!
-    ];
+    // BBFS 5D - SHUFFLED (not linear)
+    const bbfs5d = [];
+    while (bbfs5d.length < 4) {
+      const shuffled = shuffle([...digits]);
+      const num = shuffled.slice(0, 5).join('');
+      if (!bbfs5d.includes(num)) bbfs5d.push(num);
+    }
     
     console.log('Ladder result:', { bbfs6d, bbfs5d });
     return { bbfs6d, bbfs5d };
@@ -1286,7 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bbfs5d: ['12345', '23456', '34567', '45678']
     };
   }
-}  
+}
 
   /* =====================
      MAIN GENERATION FUNCTION
@@ -1663,6 +1662,7 @@ if (bbfs5dBox) {
 
 </body>
 </html>
+
 
 
 
