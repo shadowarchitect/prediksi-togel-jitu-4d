@@ -1064,23 +1064,39 @@ body {
 <section id="page-result" class="section hidden">
   <div class="header">
     <div class="header-glow"></div>
-    <h1>PREDIKSI HARI INI</h1>
-    <p>Disusun dari data sistem</p>
+    <h1 id="resultTitle">Hasil Prediksi Togel</h1>
+    <p id="resultDate">Tanggal dan Hari</p>
   </div>
   
   <div class="content">
-    <!-- BBFS Display -->
+    <!-- BBFS 7D Display -->
     <div class="bbfs-section">
-      <span class="bbfs-label">Bolak Balik Full Set (BBFS)</span>
-      <div class="bbfs-digits" id="bbfsBox">
-        <!-- JS akan isi 7 digit di sini -->
+      <span class="bbfs-label">BBFS 7 DIGIT</span>
+      <div class="bbfs-digits" id="bbfs7dBox">
+        <!-- JS will populate: 1 2 3 4 5 6 7 -->
+      </div>
+    </div>
+
+    <!-- BBFS 6D Display -->
+    <div class="bbfs-section">
+      <span class="bbfs-label">BBFS 6 DIGIT</span>
+      <div class="bbfs-grid-two-cols" id="bbfs6dBox">
+        <!-- JS will populate: 2 results in grid -->
+      </div>
+    </div>
+
+    <!-- BBFS 5D Display -->
+    <div class="bbfs-section">
+      <span class="bbfs-label">BBFS 5 DIGIT</span>
+      <div class="bbfs-grid-two-cols" id="bbfs5dBox">
+        <!-- JS will populate: 4 results in grid -->
       </div>
     </div>
     
     <!-- Game Selection -->
     <div class="glass-card">
       <p style="color: #ffffff; font-size: 15px; margin-bottom: 20px; text-align: center;">
-        PILIH JENIS PREDIKSI
+        PILIH JENIS PREDIKSI TAMBAHAN
       </p>
       
       <div class="choice-grid">
@@ -1090,23 +1106,61 @@ body {
         <button id="btnColokSet" class="choice-btn">
           🔄 COLOK BEBAS
         </button>
-        <button id="btnBbfsLadder" class="choice-btn">
-          🔢 BBFS LADDER
-        </button>
       </div>
     </div>
     
-    <!-- Result Display -->
-    <div id="resMain" class="result-container hidden">
-      <!-- 4D/3D/2D results -->
+    <!-- Main Set Results (4D/3D/2D) -->
+    <div id="resMain" class="result-container">
+      <!-- 4D SET -->
+      <div class="result-box">
+        <h3 class="result-section-title">4D SET</h3>
+        <div class="result-grid-two-cols" id="set4d">
+          <!-- JS will populate: 8 results -->
+        </div>
+      </div>
+      
+      <!-- 3D JAGA -->
+      <div class="result-box">
+        <h3 class="result-section-title">3D JAGA</h3>
+        <div class="result-grid-two-cols" id="set3d">
+          <!-- JS will populate: 8 results -->
+        </div>
+      </div>
+      
+      <!-- 2D JAGA -->
+      <div class="result-box">
+        <h3 class="result-section-title">2D JAGA</h3>
+        <div class="result-grid-two-cols" id="set2d">
+          <!-- JS will populate: 10 results -->
+        </div>
+      </div>
     </div>
     
+    <!-- Colok Results -->
     <div id="resColok" class="result-container hidden">
-      <!-- Colok results -->
-    </div>
-    
-    <div id="resBBFSLadder" class="result-container hidden">
-      <!-- BBFS Ladder results -->
+      <!-- COLOK 1D -->
+      <div class="result-box">
+        <h3 class="result-section-title">COLOK 1D</h3>
+        <div class="result-grid-two-cols" id="cb1d">
+          <!-- JS will populate -->
+        </div>
+      </div>
+      
+      <!-- COLOK 2D -->
+      <div class="result-box">
+        <h3 class="result-section-title">COLOK 2D</h3>
+        <div class="result-grid-two-cols" id="cb2d">
+          <!-- JS will populate -->
+        </div>
+      </div>
+      
+      <!-- COLOK 3D -->
+      <div class="result-box">
+        <h3 class="result-section-title">COLOK 3D</h3>
+        <div class="result-grid-two-cols" id="cb3d">
+          <!-- JS will populate -->
+        </div>
+      </div>
     </div>
     
     <!-- Share Section -->
@@ -1739,6 +1793,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
