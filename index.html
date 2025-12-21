@@ -1138,7 +1138,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* =====================
-     BUTTON FLOW
+     BUTTON FLOW - CORRECTED
   ====================== */
   qs('#btnStartIntro').onclick = () => showPage('page-country');
   qs('#btnMulai').onclick = () => showPage('page-input');
@@ -1151,37 +1151,44 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     userData.feeling = v;
-    showPage('page-history-choice');
+    showPage('page-question');  // ← KE QUESTIONNAIRE DULU
   };
 
-  qs('#btnWithHistory').onclick = () => showPage('page-history');
-  qs('#btnSkipHistory').onclick = () => {
-    userData.history = [];
-    generateBBFSAndResults();
-  };
-
+  // QUESTIONNAIRE → FEELING SENDIRI → HISTORY CHOICE
   qs('#btnFeeling').onclick = () => {
     qs('#btnFeeling').classList.add('active');
     qs('#btnBocoran').classList.remove('active');
-    showPage('page-question');
+    setTimeout(() => showPage('page-history-choice'), 300);  // ← KE HISTORY CHOICE
   };
 
+  // QUESTIONNAIRE → BOCORAN → EDUCATION
   qs('#btnBocoran').onclick = () => {
     qs('#btnBocoran').classList.add('active');
     qs('#btnFeeling').classList.remove('active');
-    showPage('page-education');
+    setTimeout(() => showPage('page-education'), 300);
   };
 
+  // HISTORY CHOICE → WITH HISTORY
+  qs('#btnWithHistory').onclick = () => showPage('page-history');
+
+  // HISTORY CHOICE → SKIP HISTORY
+  qs('#btnSkipHistory').onclick = () => {
+    userData.history = [];  // ← HISTORY KOSONG
+    generateBBFSAndResults();  // ← LANGSUNG PROCESSING
+  };
+
+  // EDUCATION → BACK TO FEELING INPUT
   qs('#btnEduNext').onclick = () => {
     qs('#feelingInput').value = '';
     showPage('page-input');
   };
 
+  // HISTORY INPUT → PROCESSING
   qs('#btnHistoryNext').onclick = () => {
     const history = [...qsa('.history')].map(i => i.value.trim());
     const filledHistory = history.filter(h => h.length > 0);
     
-    // Jika ada history yang diisi, validasi
+    // OPSIONAL: bisa skip atau isi
     if (filledHistory.length > 0) {
       if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
         alert('History harus 4 digit angka');
@@ -1200,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    userData.history = filledHistory;
+    userData.history = filledHistory;  // ← BISA KOSONG ATAU ADA ISI
     generateBBFSAndResults();
   };
 
@@ -1640,5 +1647,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
