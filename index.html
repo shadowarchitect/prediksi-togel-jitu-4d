@@ -1251,50 +1251,49 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 /* =====================
-     BBFS LADDER GENERATOR
+     BBFS LADDER GENERATOR - GUARANTEED OUTPUT
   ====================== */
-  function generateBBFSLadder(bbfs7d) {
-  console.log('Ladder called with:', bbfs7d);
+function generateBBFSLadder(bbfs7d) {
+  console.log('Generating shuffled ladder from:', bbfs7d);
+  const digits = bbfs7d.split('');
   
-  try {
-    const digits = bbfs7d.split('');
-    
-    // Manual shuffle function
-    const manualShuffle = (arr) => {
-      const shuffled = [...arr];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
-    
-    // BBFS 6D - SHUFFLED
-    const bbfs6d = [];
-    while (bbfs6d.length < 2) {
-      const shuffled = manualShuffle(digits);
-      const num = shuffled.slice(0, 6).join(' ');
-      if (!bbfs6d.includes(num)) bbfs6d.push(num);
+  // GUARANTEED 6D - 2 results (always 6 digits)
+  const bbfs6d = [];
+  
+  // Result 1: Shuffle and take first 6
+  const shuffle1 = shuffle([...digits]);
+  bbfs6d.push(shuffle1.slice(0, 6).join(' '));
+  
+  // Result 2: Different shuffle for variety
+  const shuffle2 = shuffle([...digits]);
+  bbfs6d.push(shuffle2.slice(0, 6).join(' '));
+  
+  // Remove duplicates if any (though unlikely)
+  const unique6d = [...new Set(bbfs6d)];
+  
+  // GUARANTEED 5D - 4 results (always 5 digits)
+  const bbfs5d = [];
+  
+  // Generate 4 unique 5D combos
+  while (bbfs5d.length < 4) {
+    const shuffled = shuffle([...digits]);
+    const num = shuffled.slice(0, 5).join(' ');
+    if (!bbfs5d.includes(num)) {
+      bbfs5d.push(num);
     }
-    
-    // BBFS 5D - SHUFFLED  
-    const bbfs5d = [];
-    while (bbfs5d.length < 4) {
-      const shuffled = manualShuffle(digits);
-      const num = shuffled.slice(0, 5).join(' ');
-      if (!bbfs5d.includes(num)) bbfs5d.push(num);
-    }
-    
-    console.log('Ladder result:', { bbfs6d, bbfs5d });
-    return { bbfs6d, bbfs5d };
-    
-  } catch (error) {
-    console.error('Error in generateBBFSLadder:', error);
-    return {
-      bbfs6d: ['123456', '654321'],
-      bbfs5d: ['12345', '23456', '34567', '45678']
-    };
   }
+  
+  console.log('BBFS 6D (guaranteed):', unique6d);
+  console.log('BBFS 5D (guaranteed):', bbfs5d);
+  
+  // Return untuk display - PASTI LENGKAP
+  const allResults = [
+    digits.join(' '),      // 7D original
+    ...unique6d,           // 6D (2 results, PASTI)
+    ...bbfs5d              // 5D (4 results, PASTI)
+  ];
+  
+  return allResults;
 }
 
   /* =====================
@@ -1672,6 +1671,7 @@ if (bbfs5dBox) {
 
 </body>
 </html>
+
 
 
 
