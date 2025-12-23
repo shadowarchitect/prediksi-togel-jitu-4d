@@ -1433,7 +1433,7 @@ function renderResult() {
   /* =====================
      MAIN GENERATION FUNCTION
   ====================== */
-  ffunction generateBBFSAndResults() {
+function generateBBFSAndResults() {
   console.log('=== START GENERATION ===');
   console.log('User feeling:', userData.feeling);
   
@@ -1456,9 +1456,9 @@ function renderResult() {
     cb2d: userData.results.cb2d,
     cb3d: userData.results.cb3d
   });
-    
-    // 4. Run processing
-runProcessing();
+  
+  // 4. Run processing
+  runProcessing();
 }
 
 /* =====================
@@ -1750,6 +1750,7 @@ qs('#btnMainSet').click();
 
 </body>
 </html>
+
 
 
 
