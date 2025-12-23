@@ -1215,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
   qs('#btnDonate').onclick = () => showPage('page-donation');
   qs('#btnBackHome').onclick = () => showPage('page-intro');
 
-  /* =====================
+ /* =====================
      BBFS 7D GENERATOR
   ====================== */
   function generateBBFS7D(feeling) {
@@ -1251,7 +1251,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 /* =====================
-     RENDER RESULT PAGE - FIXED FOR BOTH FORMATS
+     BBFS LADDER GENERATOR - FIXED SHUFFLE
+  ====================== */
+  function generateBBFSLadder(bbfs7d) {
+    console.log('Generating BBFS ladder from:', bbfs7d);
+    const digits = bbfs7d.split('');
+    
+    // BBFS 6D - 2 results (SHUFFLED, NOT LINEAR)
+    const bbfs6d = [];
+    while (bbfs6d.length < 2) {
+      const shuffled = shuffle([...digits]);
+      const num = shuffled.slice(0, 6).join('');
+      if (!bbfs6d.includes(num)) {
+        bbfs6d.push(num);
+      }
+    }
+    
+    // BBFS 5D - 4 results (SHUFFLED, NOT LINEAR)
+    const bbfs5d = [];
+    while (bbfs5d.length < 4) {
+      const shuffled = shuffle([...digits]);
+      const num = shuffled.slice(0, 5).join('');
+      if (!bbfs5d.includes(num)) {
+        bbfs5d.push(num);
+      }
+    }
+    
+    console.log('BBFS 6D:', bbfs6d);
+    console.log('BBFS 5D:', bbfs5d);
+    
+    return { bbfs6d, bbfs5d };
+  }
+
+  /* =====================
+     RENDER RESULT PAGE - SINGLE VERSION (NO DUPLICATE)
   ====================== */
 function renderResult() {
     console.log('renderResult called, userData:', userData);
@@ -1319,41 +1352,23 @@ function renderResult() {
         }
     }
 
-    // 2. DETEKSI FORMAT DATA & RENDER 6D/5D
-    let bbfs6dData = [];
-    let bbfs5dData = [];
-    
-    // Format 1: userData.ladderResults (array from index.html generator)
-    if (userData.ladderResults && Array.isArray(userData.ladderResults)) {
-        console.log('Using ladderResults array format');
-        // ladderResults format: [7D, 6D-1, 6D-2, 5D-1, 5D-2, 5D-3, 5D-4]
-        bbfs6dData = userData.ladderResults.slice(1, 3); // index 1-2 (2 items)
-        bbfs5dData = userData.ladderResults.slice(3, 7); // index 3-6 (4 items)
+    // 2. Render BBFS 6D (2 baris, 6 digit per baris)
+    if (userData.ladder && userData.ladder.bbfs6d) {
+        renderNumberSet('bbfs6dBox', userData.ladder.bbfs6d, 6);
+    } else {
+        console.error('No 6D ladder data found!');
+        const bbfs6dBox = qs('#bbfs6dBox');
+        if (bbfs6dBox) bbfs6dBox.innerHTML = '<div class="no-data">Data 6D tidak tersedia</div>';
     }
-    // Format 2: userData.ladder object (from script.js generator)
-    else if (userData.ladder && userData.ladder.bbfs6d && userData.ladder.bbfs5d) {
-        console.log('Using ladder object format');
-        bbfs6dData = userData.ladder.bbfs6d;
-        bbfs5dData = userData.ladder.bbfs5d;
-    }
-    // Format 3: Direct from ladder generator return (array)
-    else if (userData.ladder && Array.isArray(userData.ladder)) {
-        console.log('Using ladder array format');
-        bbfs6dData = userData.ladder.slice(1, 3);
-        bbfs5dData = userData.ladder.slice(3, 7);
-    }
-    else {
-        console.error('Unknown ladder data format:', userData.ladder);
-    }
-    
-    console.log('6D data to render:', bbfs6dData);
-    console.log('5D data to render:', bbfs5dData);
 
-    // 3. Render BBFS 6D
-    renderNumberSet('bbfs6dBox', bbfs6dData, 6);
-    
-    // 4. Render BBFS 5D
-    renderNumberSet('bbfs5dBox', bbfs5dData, 5);
+    // 3. Render BBFS 5D (4 baris, 5 digit per baris)
+    if (userData.ladder && userData.ladder.bbfs5d) {
+        renderNumberSet('bbfs5dBox', userData.ladder.bbfs5d, 5);
+    } else {
+        console.error('No 5D ladder data found!');
+        const bbfs5dBox = qs('#bbfs5dBox');
+        if (bbfs5dBox) bbfs5dBox.innerHTML = '<div class="no-data">Data 5D tidak tersedia</div>';
+    }
 
     console.log('Result page rendered successfully');
 }
@@ -1374,89 +1389,6 @@ function renderResult() {
     // 4. Run processing
     runProcessing();
   }
-
-  /* =====================
-     RENDER RESULT PAGE - CORRECTED LAYOUT
-  ====================== */
-function renderResult() {
-    // Helper function untuk membuat digit dengan animasi
-    const createDigitSpan = (digit, delay) => {
-        const span = document.createElement('span');
-        span.className = 'bbfs-digit';
-        span.textContent = digit;
-        span.style.animationDelay = `${delay}s`;
-        return span;
-    };
-
-    // Helper function untuk render angka (dengan atau tanpa spasi)
-    const renderNumberSet = (containerId, numbers, digitsPerNumber) => {
-        const container = qs(`#${containerId}`);
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        if (!numbers || numbers.length === 0) {
-            console.warn(`No data for ${containerId}`);
-            return;
-        }
-        
-        numbers.forEach((numStr, index) => {
-            // Bersihkan spasi jika ada, lalu ambil digit
-            const cleanNum = numStr.replace(/\s/g, '');
-            const digits = cleanNum.split('');
-            
-            // Pastikan jumlah digit sesuai
-            if (digits.length !== digitsPerNumber) {
-                console.warn(`Invalid number of digits for ${containerId}:`, numStr);
-                return;
-            }
-            
-            // Buat container untuk tiap baris angka
-            const rowContainer = document.createElement('div');
-            rowContainer.style.cssText = 'display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;';
-            
-            // Tambahkan masing-masing digit
-            digits.forEach((digit, digitIndex) => {
-                const delay = (index * 0.3) + (digitIndex * 0.1);
-                rowContainer.appendChild(createDigitSpan(digit, delay));
-            });
-            
-            container.appendChild(rowContainer);
-        });
-    };
-
-    // 1. Render BBFS 7D - TOP SECTION
-    const bbfs7dBox = qs('#bbfs7dBox');
-    if (bbfs7dBox) {
-        bbfs7dBox.innerHTML = '';
-        const digits = userData.bbfs.split('');
-        digits.forEach((d, index) => {
-            bbfs7dBox.appendChild(createDigitSpan(d, index * 0.1));
-        });
-    }
-
-    // 2. Render BBFS 6D (2 baris, 6 digit per baris)
-    // PASTIKAN: userData.ladder.bbfs6d adalah array of strings (6 digit tanpa spasi)
-    if (userData.ladder && userData.ladder.bbfs6d) {
-        renderNumberSet('bbfs6dBox', userData.ladder.bbfs6d, 6);
-    } else {
-        console.error('No 6D ladder data found!');
-        const bbfs6dBox = qs('#bbfs6dBox');
-        if (bbfs6dBox) bbfs6dBox.innerHTML = '<div class="no-data">Data 6D tidak tersedia</div>';
-    }
-
-    // 3. Render BBFS 5D (4 baris, 5 digit per baris)
-    // PASTIKAN: userData.ladder.bbfs5d adalah array of strings (5 digit tanpa spasi)
-    if (userData.ladder && userData.ladder.bbfs5d) {
-        renderNumberSet('bbfs5dBox', userData.ladder.bbfs5d, 5);
-    } else {
-        console.error('No 5D ladder data found!');
-        const bbfs5dBox = qs('#bbfs5dBox');
-        if (bbfs5dBox) bbfs5dBox.innerHTML = '<div class="no-data">Data 5D tidak tersedia</div>';
-    }
-
-    console.log('Result page rendered successfully');
-}
 
   /* =====================
      PROCESSING ANIMATION - REALISTIC (FIXED)
@@ -1537,89 +1469,16 @@ function renderResult() {
     }, 100); // 100ms delay untuk DOM update
   }
 
+  // HAPUS SEMUA FUNGSI RENDER RESULT YANG DUPLIKAT DI BAWAH INI!
+  // JANGAN ADA FUNGSI renderResult() LAGI SETELAH INI!
+
   /* =====================
-     RENDER RESULT PAGE - CORRECTED LAYOUT
+     SHOW RESULT PAGE WITH TABS
   ====================== */
-function renderResult() {
-    // Helper function untuk membuat digit dengan animasi
-    const createDigitSpan = (digit, delay) => {
-        const span = document.createElement('span');
-        span.className = 'bbfs-digit';
-        span.textContent = digit;
-        span.style.animationDelay = `${delay}s`;
-        return span;
-    };
-
-    // Helper function untuk render angka (dengan atau tanpa spasi)
-    const renderNumberSet = (containerId, numbers, digitsPerNumber) => {
-        const container = qs(`#${containerId}`);
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        if (!numbers || numbers.length === 0) {
-            console.warn(`No data for ${containerId}`);
-            return;
-        }
-        
-        numbers.forEach((numStr, index) => {
-            // Bersihkan spasi jika ada, lalu ambil digit
-            const cleanNum = numStr.replace(/\s/g, '');
-            const digits = cleanNum.split('');
-            
-            // Pastikan jumlah digit sesuai
-            if (digits.length !== digitsPerNumber) {
-                console.warn(`Invalid number of digits for ${containerId}:`, numStr);
-                return;
-            }
-            
-            // Buat container untuk tiap baris angka
-            const rowContainer = document.createElement('div');
-            rowContainer.style.cssText = 'display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;';
-            
-            // Tambahkan masing-masing digit
-            digits.forEach((digit, digitIndex) => {
-                const delay = (index * 0.3) + (digitIndex * 0.1);
-                rowContainer.appendChild(createDigitSpan(digit, delay));
-            });
-            
-            container.appendChild(rowContainer);
-        });
-    };
-
-    // 1. Render BBFS 7D - TOP SECTION
-    const bbfs7dBox = qs('#bbfs7dBox');
-    if (bbfs7dBox) {
-        bbfs7dBox.innerHTML = '';
-        const digits = userData.bbfs.split('');
-        digits.forEach((d, index) => {
-            bbfs7dBox.appendChild(createDigitSpan(d, index * 0.1));
-        });
-    }
-
-    // 2. Render BBFS 6D (2 baris, 6 digit per baris)
-    // PASTIKAN: userData.ladder.bbfs6d adalah array of strings (6 digit tanpa spasi)
-    if (userData.ladder && userData.ladder.bbfs6d) {
-        renderNumberSet('bbfs6dBox', userData.ladder.bbfs6d, 6);
-    } else {
-        console.error('No 6D ladder data found!');
-        const bbfs6dBox = qs('#bbfs6dBox');
-        if (bbfs6dBox) bbfs6dBox.innerHTML = '<div class="no-data">Data 6D tidak tersedia</div>';
-    }
-
-    // 3. Render BBFS 5D (4 baris, 5 digit per baris)
-    // PASTIKAN: userData.ladder.bbfs5d adalah array of strings (5 digit tanpa spasi)
-    if (userData.ladder && userData.ladder.bbfs5d) {
-        renderNumberSet('bbfs5dBox', userData.ladder.bbfs5d, 5);
-    } else {
-        console.error('No 5D ladder data found!');
-        const bbfs5dBox = qs('#bbfs5dBox');
-        if (bbfs5dBox) bbfs5dBox.innerHTML = '<div class="no-data">Data 5D tidak tersedia</div>';
-    }
-
-    console.log('Result page rendered successfully');
-}
-
+  function showResultPage() {
+    console.log('showResultPage called');
+    showPage('page-result');
+    
     // Reset all result containers
     qs('#resMain').classList.add('hidden');
     qs('#resColok').classList.add('hidden');
@@ -1768,6 +1627,7 @@ function renderResult() {
 
 </body>
 </html>
+
 
 
 
