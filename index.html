@@ -1444,200 +1444,252 @@ function renderResult() {
     userData.results = generateResults(userData.bbfs);
     
     // 4. Run processing
-    runProcessing();
-  }
+runProcessing();
+}
 
-  /* =====================
-     PROCESSING ANIMATION - REALISTIC (FIXED)
-  ====================== */
-  function runProcessing() {
-    console.log('RUN PROCESSING CALLED');
-    showPage('page-processing');
-    
-    // WAIT for DOM to update after showing page
+/* =====================
+   PROCESSING ANIMATION - REALISTIC (FIXED)
+====================== */
+function runProcessing() {
+console.log('RUN PROCESSING CALLED');
+showPage('page-processing');
+
+// WAIT for DOM to update after showing page
+setTimeout(() => {
+  const fill = qs('#progressFill');
+  const text = qs('#progressText');
+  const log = qs('#processLog');
+  
+  console.log('Elements after timeout:', { 
+    fill: fill ? 'FOUND' : 'NOT FOUND',
+    text: text ? 'FOUND' : 'NOT FOUND',
+    log: log ? 'FOUND' : 'NOT FOUND'
+  });
+  
+  // SAFETY CHECK: If elements not found, skip to result
+  if (!fill || !text || !log) {
+    console.error('Progress elements missing! Skipping to result.');
     setTimeout(() => {
-      const fill = qs('#progressFill');
-      const text = qs('#progressText');
-      const log = qs('#processLog');
-      
-      console.log('Elements after timeout:', { 
-        fill: fill ? 'FOUND' : 'NOT FOUND',
-        text: text ? 'FOUND' : 'NOT FOUND',
-        log: log ? 'FOUND' : 'NOT FOUND'
-      });
-      
-      // SAFETY CHECK: If elements not found, skip to result
-      if (!fill || !text || !log) {
-        console.error('Progress elements missing! Skipping to result.');
-        setTimeout(() => {
-          renderResult();
-          showPage('page-result');
-        }, 500);
-        return;
-      }
-      
-      log.innerHTML = '';
-      
-      const steps = [
-        {percent: 20, text: "Feeling nomor user diterima", 
-         log: `✓ FEELING DITERIMA: ${userData.feeling.split('').join(' ')}`},
-        
-        {percent: 40, text: "Menganalisa data number dari sistem", 
-         log: `⏳ MENGAKSES DATABASE: 5,247 hasil sebelumnya<br>✓ DATA TERLOAD 100%`},
-        
-        {percent: 60, text: "Menganalisa pola bandar dari hasil sebelumnya", 
-         log: userData.history.length > 0 
-           ? `⏳ MENDETEKSI POLA: ${userData.history.length} history terdeteksi`
-           : `⏳ MENDETEKSI POLA: menggunakan data sistem`},
-        
-        {percent: 80, text: "Menghitung probabilitas untuk hari ini", 
-         log: `⏳ MENGHITUNG PROBABILITAS...<br>✓ BBFS GENERATED: ${userData.bbfs.split('').join(' ')}`},
-        
-        {percent: 100, text: "Nomor prediksi sudah selesai !", 
-         log: `✅ NOMOR PREDIKSI SUDAH SELESAI!`}
-      ];
-      
-      let currentStep = 0;
-      
-      const interval = setInterval(() => {
-        if (currentStep < steps.length) {
-          const step = steps[currentStep];
-          
-          // FIXED: Now fill should exist
-          fill.style.width = step.percent + '%';
-          text.textContent = step.text;
-          
-          // Add log
-          const logLine = document.createElement('div');
-          logLine.innerHTML = step.log;
-          log.appendChild(logLine);
-          log.scrollTop = log.scrollHeight;
-          
-          currentStep++;
-        } else {
-          clearInterval(interval);
-          setTimeout(() => {
-            renderResult();
-            showPage('page-result');
-          }, 500);
-        }
-      }, 1200);
-      
-    }, 100); // 100ms delay untuk DOM update
+      renderResult();
+      showResultPage();  // PERUBAHAN: Panggil showResultPage() bukan showPage('page-result')
+    }, 500);
+    return;
   }
-
-  // HAPUS SEMUA FUNGSI RENDER RESULT YANG DUPLIKAT DI BAWAH INI!
-  // JANGAN ADA FUNGSI renderResult() LAGI SETELAH INI!
-
-  /* =====================
-     SHOW RESULT PAGE WITH TABS
-  ====================== */
-  function showResultPage() {
-    console.log('showResultPage called');
-    showPage('page-result');
+  
+  log.innerHTML = '';
+  
+  const steps = [
+    {percent: 20, text: "Feeling nomor user diterima", 
+     log: `✓ FEELING DITERIMA: ${userData.feeling.split('').join(' ')}`},
     
-    // Reset all result containers
-    qs('#resMain').classList.add('hidden');
-    qs('#resColok').classList.add('hidden');
-    // qs('#resBBFSLadder').classList.add('hidden');  // ← REMOVED: No BBFS Ladder tab
+    {percent: 40, text: "Menganalisa data number dari sistem", 
+     log: `⏳ MENGAKSES DATABASE: 5,247 hasil sebelumnya<br>✓ DATA TERLOAD 100%`},
+    
+    {percent: 60, text: "Menganalisa pola bandar dari hasil sebelumnya", 
+     log: userData.history.length > 0 
+       ? `⏳ MENDETEKSI POLA: ${userData.history.length} history terdeteksi`
+       : `⏳ MENDETEKSI POLA: menggunakan data sistem`},
+    
+    {percent: 80, text: "Menghitung probabilitas untuk hari ini", 
+     log: `⏳ MENGHITUNG PROBABILITAS...<br>✓ BBFS GENERATED: ${userData.bbfs.split('').join(' ')}`},
+    
+    {percent: 100, text: "Nomor prediksi sudah selesai !", 
+     log: `✅ NOMOR PREDIKSI SUDAH SELESAI!`}
+  ];
+  
+  let currentStep = 0;
+  
+  const interval = setInterval(() => {
+    if (currentStep < steps.length) {
+      const step = steps[currentStep];
+      
+      // FIXED: Now fill should exist
+      fill.style.width = step.percent + '%';
+      text.textContent = step.text;
+      
+      // Add log
+      const logLine = document.createElement('div');
+      logLine.innerHTML = step.log;
+      log.appendChild(logLine);
+      log.scrollTop = log.scrollHeight;
+      
+      currentStep++;
+    } else {
+      clearInterval(interval);
+      setTimeout(() => {
+        renderResult();        // Render BBFS ladder
+        showResultPage();      // PERUBAHAN: Tampilkan tab hasil 4D/3D/2D/Colok
+      }, 500);
+    }
+  }, 1200);
+  
+}, 100); // 100ms delay untuk DOM update
+}
 
-    // Main Set Button - 4D/3D/2D
-    qs('#btnMainSet').onclick = () => {
-      qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
-      qs('#btnMainSet').classList.add('active');
-      
-      qs('#resColok').classList.add('hidden');
-      // qs('#resBBFSLadder').classList.add('hidden');  // ← REMOVED
-      
-      const el = qs('#resMain');
-      el.classList.remove('hidden');
-      
-      let html = '<div class="result-title">🎯 PREDIKSI UTAMA</div>';
-      
-      // 4D SET - 8 results (4 rows × 2 columns)
-      html += '<div style="margin-bottom: 30px;">';
-      html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">4D SET (8 PREDIKSI)</div>';
-      html += '<div class="result-grid">';
-      userData.results.set4d.forEach((num, index) => {
-        html += `<div class="result-number">${num}</div>`;
-      });
-      html += '</div></div>';
-      
-      // 3D JAGA - 8 results (4 rows × 2 columns)
-      html += '<div style="margin-bottom: 30px;">';
-      html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">3D JAGA (8 PREDIKSI)</div>';
-      html += '<div class="result-grid">';
-      userData.results.set3d.forEach(num => {
-        html += `<div class="result-number">${num}</div>`;
-      });
-      html += '</div></div>';
-      
-      // 2D JAGA - 10 results (5 pairs, special layout)
-      html += '<div>';
-      html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">2D JAGA (10 PREDIKSI)</div>';
-      html += '<div class="result-grid-2d">';
-      // SAMA PERSIS seperti logika lama: 5 results × 2 (utama + balik)
-      const main2d = userData.results.set2d.filter((_, i) => i % 2 === 0); // Ambil yang utama
-      main2d.forEach((num, index) => {
-        // Setiap angka tampilkan 2x: num dan num[1]+num[0]
-        html += `<div class="result-number">${num}</div>`;
-        html += `<div class="result-number">${num[1]}${num[0]}</div>`;
-      });
-      html += '</div></div>';
-      
-      el.innerHTML = html;
-    };
+// HAPUS SEMUA FUNGSI RENDER RESULT YANG DUPLIKAT DI BAWAH INI!
+// JANGAN ADA FUNGSI renderResult() LAGI SETELAH INI!
 
-    // Colok Set Button - TETAP SAMA seperti existing
-    qs('#btnColokSet').onclick = () => {
-      qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
-      qs('#btnColokSet').classList.add('active');
-      
-      qs('#resMain').classList.add('hidden');
-      // qs('#resBBFSLadder').classList.add('hidden');  // ← REMOVED
-      
-      const el = qs('#resColok');
-      el.classList.remove('hidden');
-      
-      let html = '<div class="result-title">🔄 COLOK BEBAS</div>';
-      
-      // COLOK 1D - 3 results
-      html += '<div style="margin-bottom: 25px;">';
-      html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 1D</div>';
-      html += '<div class="result-grid">';
-      userData.results.cb1d.forEach(num => {
-        html += `<div class="result-number">${num}</div>`;
-      });
-      // Tambah empty jika kurang dari 4
-      for(let i = userData.results.cb1d.length; i < 4; i++) {
-        html += '<div class="result-number" style="opacity: 0.5;">-</div>';
-      }
-      html += '</div></div>';
-      
-      // COLOK 2D
-      html += '<div style="margin-bottom: 25px;">';
-      html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 2D</div>';
-      html += '<div class="result-grid">';
-      userData.results.cb2d.forEach(num => {
-        html += `<div class="result-number">${num}</div>`;
-      });
-      html += '</div></div>';
-      
-      // COLOK 3D
-      html += '<div>';
-      html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 3D</div>';
-      html += '<div class="result-grid">';
-      userData.results.cb3d.forEach(num => {
-        html += `<div class="result-number">${num}</div>`;
-      });
-      html += '</div></div>';
-      
-      el.innerHTML = html;
-    };
+/* =====================
+   GENERATE RESULTS - 4D/3D/2D/COLOK (FUNGSI YANG HILANG)
+====================== */
+function generateResults(bbfs) {
+const d = bbfs.split('');
 
-    // Trigger Main Set by default
-    qs('#btnMainSet').click();
+// 4D SET - 8 results
+const set4d = [];
+while (set4d.length < 8) {
+  const n = shuffle(d).slice(0,4).join('');
+  if (!set4d.includes(n)) set4d.push(n);
+}
+
+// 3D JAGA - 8 results
+const set3d = [];
+while (set3d.length < 8) {
+  const n = shuffle(d).slice(0,3).join('');
+  if (!set3d.includes(n)) set3d.push(n);
+}
+
+// 2D JAGA - 10 results (5 pairs + mirror)
+const main2d = [];
+while (main2d.length < 5) {
+  const n = shuffle(d).slice(0,2).join('');
+  if (n.length === 2 && !main2d.includes(n)) main2d.push(n);
+}
+
+const set2d = [];
+main2d.forEach(n => {
+  if (n.length === 2) {
+    set2d.push(n);
+    set2d.push(n[1] + n[0]); // mirror
   }
+});
+
+// COLOK 1D - ambil 3 digit unik dari BBFS
+const cb1d = [...new Set(d)].slice(0, 3);
+
+// COLOK 2D - kombinasi dari cb1d
+const cb2d = [];
+for (let i = 0; i < cb1d.length; i++) {
+  for (let j = i + 1; j < cb1d.length; j++) {
+    cb2d.push(cb1d[i] + cb1d[j]);
+  }
+}
+
+// COLOK 3D - tambah digit ke cb2d
+const cb3d = [];
+cb2d.forEach((pair, idx) => {
+  if (pair.length === 2) {
+    cb3d.push(pair + d[idx % d.length]);
+  }
+});
+
+return { set4d, set3d, set2d, cb1d, cb2d, cb3d };
+}
+
+/* =====================
+   SHOW RESULT PAGE WITH TABS
+====================== */
+function showResultPage() {
+console.log('showResultPage called');
+showPage('page-result');
+
+// Reset all result containers
+qs('#resMain').classList.add('hidden');
+qs('#resColok').classList.add('hidden');
+
+// Main Set Button - 4D/3D/2D
+qs('#btnMainSet').onclick = () => {
+  qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
+  qs('#btnMainSet').classList.add('active');
+  
+  qs('#resColok').classList.add('hidden');
+  
+  const el = qs('#resMain');
+  el.classList.remove('hidden');
+  
+  let html = '<div class="result-title">🎯 PREDIKSI UTAMA</div>';
+  
+  // 4D SET - 8 results (4 rows × 2 columns)
+  html += '<div style="margin-bottom: 30px;">';
+  html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">4D SET (8 PREDIKSI)</div>';
+  html += '<div class="result-grid">';
+  userData.results.set4d.forEach((num, index) => {
+    html += `<div class="result-number">${num}</div>`;
+  });
+  html += '</div></div>';
+  
+  // 3D JAGA - 8 results (4 rows × 2 columns)
+  html += '<div style="margin-bottom: 30px;">';
+  html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">3D JAGA (8 PREDIKSI)</div>';
+  html += '<div class="result-grid">';
+  userData.results.set3d.forEach(num => {
+    html += `<div class="result-number">${num}</div>`;
+  });
+  html += '</div></div>';
+  
+  // 2D JAGA - 10 results (5 pairs, special layout)
+  html += '<div>';
+  html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">2D JAGA (10 PREDIKSI)</div>';
+  html += '<div class="result-grid-2d">';
+  const main2d = userData.results.set2d.filter((_, i) => i % 2 === 0);
+  main2d.forEach((num, index) => {
+    html += `<div class="result-number">${num}</div>`;
+    html += `<div class="result-number">${num[1]}${num[0]}</div>`;
+  });
+  html += '</div></div>';
+  
+  el.innerHTML = html;
+};
+
+// Colok Set Button - TETAP SAMA seperti existing
+qs('#btnColokSet').onclick = () => {
+  qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
+  qs('#btnColokSet').classList.add('active');
+  
+  qs('#resMain').classList.add('hidden');
+  
+  const el = qs('#resColok');
+  el.classList.remove('hidden');
+  
+  let html = '<div class="result-title">🔄 COLOK BEBAS</div>';
+  
+  // COLOK 1D - 3 results
+  html += '<div style="margin-bottom: 25px;">';
+  html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 1D</div>';
+  html += '<div class="result-grid">';
+  userData.results.cb1d.forEach(num => {
+    html += `<div class="result-number">${num}</div>`;
+  });
+  // Tambah empty jika kurang dari 4
+  for(let i = userData.results.cb1d.length; i < 4; i++) {
+    html += '<div class="result-number" style="opacity: 0.5;">-</div>';
+  }
+  html += '</div></div>';
+  
+  // COLOK 2D
+  html += '<div style="margin-bottom: 25px;">';
+  html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 2D</div>';
+  html += '<div class="result-grid">';
+  userData.results.cb2d.forEach(num => {
+    html += `<div class="result-number">${num}</div>`;
+  });
+  html += '</div></div>';
+  
+  // COLOK 3D
+  html += '<div>';
+  html += '<div style="color: #2563eb; font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 3D</div>';
+  html += '<div class="result-grid">';
+  userData.results.cb3d.forEach(num => {
+    html += `<div class="result-number">${num}</div>`;
+  });
+  html += '</div></div>';
+  
+  el.innerHTML = html;
+};
+
+// Trigger Main Set by default
+qs('#btnMainSet').click();
+}
 
       /* =====================
      SHARE FUNCTIONS
@@ -1684,6 +1736,7 @@ function renderResult() {
 
 </body>
 </html>
+
 
 
 
