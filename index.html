@@ -466,6 +466,35 @@ select.clean-input {
   color: #2563eb;
 }
 
+/* Facebook & Twitter buttons */
+.share-btn.facebook {
+  border-color: #1877f2;
+  color: #1877f2;
+}
+
+.share-btn.twitter {
+  border-color: #1da1f2;
+  color: #1da1f2;
+}
+
+.share-btn.facebook:hover {
+  background: rgba(24, 119, 242, 0.1);
+}
+
+.share-btn.twitter:hover {
+  background: rgba(29, 161, 242, 0.1);
+}
+
+/* Responsive: 2 columns on mobile */
+@media (max-width: 480px) {
+  .share-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .share-buttons .share-btn:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+}
 /* ========== ANIMATIONS ========== */
 @keyframes fadeIn {
   from {
@@ -1004,9 +1033,9 @@ select.clean-input {
       
       <!-- 2D JAGA -->
       <div>
-        <div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">2D JAGA (10 PREDIKSI)</div>
-        <div class="result-grid-2d" id="set2d">
-          <!-- JS will populate: 10 results -->
+  <div style="color: #2563eb; font-size: 13px; margin-bottom: 12px; font-weight: 600; text-align: center;">2D JAGA (10 PREDIKSI)</div>
+  <div class="result-grid" id="set2d">  <!-- ← GANTI INI -->
+    <!-- JS will populate: 10 results -->
         </div>
       </div>
     </div>
@@ -1039,23 +1068,26 @@ select.clean-input {
     </div>
     
     <!-- Share Section -->
-    <div class="share-section">
-      <div class="share-title">📱 BAGIKAN HASIL</div>
-      <div class="share-buttons">
-        <button class="share-btn whatsapp" onclick="shareToWhatsApp()">
-          <span>💬</span>
-          WhatsApp
-        </button>
-        <button class="share-btn telegram" onclick="shareToTelegram()">
-          <span>📨</span>
-          Telegram
-        </button>
-        <button class="share-btn copy" onclick="copyResults()">
-          <span>📋</span>
-          Salin Hasil
-        </button>
-      </div>
-    </div>
+<div class="share-section">
+  <div class="share-title">📱 BAGIKAN HASIL</div>
+  <div class="share-buttons">
+    <button class="share-btn whatsapp" onclick="shareToWhatsApp()">
+      <span>💬</span> WhatsApp
+    </button>
+    <button class="share-btn telegram" onclick="shareToTelegram()">
+      <span>📨</span> Telegram
+    </button>
+    <button class="share-btn facebook" onclick="shareToFacebook()">
+      <span>📘</span> Facebook
+    </button>
+    <button class="share-btn twitter" onclick="shareToTwitter()">
+      <span>🐦</span> Twitter
+    </button>
+    <button class="share-btn copy" onclick="copyResults()">
+      <span>📋</span> Salin Hasil
+    </button>
+  </div>
+</div>
     
     <!-- Bottom Buttons -->
     <div class="btn-group">
@@ -1705,41 +1737,47 @@ qs('#btnColokSet').onclick = () => {
 qs('#btnMainSet').click();
 }
 
-      /* =====================
+     /* =====================
      SHARE FUNCTIONS
   ====================== */
-  function shareToWhatsApp() {
-    const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
+function shareToWhatsApp() {
+  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
 
-  function shareToTelegram() {
-    const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
-    const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
+function shareToTelegram() {
+  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
+  const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
 
-  function copyResults() {
-    let text = `🎯 PREDIKSI TOGEL HARI INI\n\n`;
-    text += `BBFS: ${userData.bbfs}\n\n`;
-    
-    // Add 4D results
-    text += `4D SET:\n`;
-    userData.results.set4d.forEach(num => text += `${num} `);
-    text += `\n\n`;
-    
-    // Add 3D results
-    text += `3D JAGA:\n`;
-    userData.results.set3d.forEach(num => text += `${num} `);
-    text += `\n\n`;
-    
-    text += `Gunakan prediksi dengan bijak!`;
-    
-    navigator.clipboard.writeText(text).then(() => {
-      alert('Hasil prediksi berhasil disalin ke clipboard!');
-    });
-  }
+function shareToFacebook() {
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+  window.open(url, '_blank', 'width=600,height=400');
+}
+
+function shareToTwitter() {
+  const text = `🎯 PREDIKSI TOGEL BBFS: ${userData.bbfs}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+  window.open(url, '_blank', 'width=600,height=400');
+}
+
+function copyResults() {
+  let text = `🎯 PREDIKSI TOGEL HARI INI\n\n`;
+  text += `BBFS: ${userData.bbfs}\n\n`;
+  text += `4D SET: ${userData.results.set4d.join(' ')}\n`;
+  text += `3D JAGA: ${userData.results.set3d.join(' ')}\n`;
+  text += `2D JAGA: ${userData.results.set2d.join(' ')}\n\n`;
+  text += `Gunakan prediksi dengan bijak!`;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    alert('✅ Hasil prediksi berhasil disalin ke clipboard!');
+  }).catch(err => {
+    console.error('Copy failed:', err);
+    alert('❌ Gagal menyalin, coba manual copy');
+  });
+}
 
   /* =====================
      INIT
@@ -1750,6 +1788,7 @@ qs('#btnMainSet').click();
 
 </body>
 </html>
+
 
 
 
