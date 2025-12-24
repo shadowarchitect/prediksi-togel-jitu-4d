@@ -1736,26 +1736,26 @@ qs('#btnColokSet').onclick = () => {
 // Trigger Main Set by default
 qs('#btnMainSet').click();
 }
-
-     /* =====================
-     SHARE FUNCTIONS (GLOBAL)
+ 
+   /* =====================
+     SHARE FUNCTIONS
   ====================== */
 function shareToWhatsApp() {
-  if (!window.userData || !window.userData.bbfs) {
+  if (!userData.bbfs) {
     alert('Data belum tersedia');
     return;
   }
-  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${window.userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
+  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
   const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
 
 function shareToTelegram() {
-  if (!window.userData || !window.userData.bbfs) {
+  if (!userData.bbfs) {
     alert('Data belum tersedia');
     return;
   }
-  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${window.userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
+  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
   const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
@@ -1766,32 +1766,33 @@ function shareToFacebook() {
 }
 
 function shareToTwitter() {
-  if (!window.userData || !window.userData.bbfs) {
+  if (!userData.bbfs) {
     alert('Data belum tersedia');
     return;
   }
-  const text = `🎯 PREDIKSI TOGEL BBFS: ${window.userData.bbfs}`;
+  const text = `🎯 PREDIKSI TOGEL BBFS: ${userData.bbfs}`;
   const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
   window.open(url, '_blank', 'width=600,height=400');
 }
 
 function copyResults() {
-  if (!window.userData || !window.userData.bbfs || !window.userData.results) {
+  if (!userData.bbfs || !userData.results) {
     alert('Data belum tersedia');
     return;
   }
   
   let text = `🎯 PREDIKSI TOGEL HARI INI\n\n`;
-  text += `BBFS: ${window.userData.bbfs}\n\n`;
-  text += `4D SET: ${window.userData.results.set4d.join(' ')}\n`;
-  text += `3D JAGA: ${window.userData.results.set3d.join(' ')}\n`;
-  text += `2D JAGA: ${window.userData.results.set2d.join(' ')}\n\n`;
+  text += `BBFS: ${userData.bbfs}\n\n`;
+  text += `4D SET: ${userData.results.set4d.join(' ')}\n`;
+  text += `3D JAGA: ${userData.results.set3d.join(' ')}\n`;
+  text += `2D JAGA: ${userData.results.set2d.join(' ')}\n\n`;
   text += `Gunakan prediksi dengan bijak!`;
   
   navigator.clipboard.writeText(text).then(() => {
     alert('✅ Hasil prediksi berhasil disalin ke clipboard!');
   }).catch(err => {
     console.error('Copy failed:', err);
+    // Fallback untuk browser lama
     const textarea = document.createElement('textarea');
     textarea.value = text;
     document.body.appendChild(textarea);
@@ -1802,15 +1803,6 @@ function copyResults() {
   });
 }
 
-/* =====================
-     INIT SCRIPT
-  ====================== */
-document.addEventListener('DOMContentLoaded', () => {
-  // ... SEMUA KODE LAIN ANDA DI SINI ...
-  
-  // Buat userData bisa diakses global untuk fungsi share
-  window.userData = userData;
-  
   /* =====================
      INIT
   ====================== */
